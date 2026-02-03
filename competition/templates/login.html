@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}Login - Essay Competition{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center align-items-center min-vh-75">
+        <div class="col-md-6 col-lg-5">
+            <div class="login-card">
+                <h2 class="text-center mb-4">Login to Your Account</h2>
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" class="form-control" id="username" name="username" required autofocus>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+                </form>
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">Don't have an account?</p>
+                    <small class="text-muted">Contact the administrator to create one for you.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

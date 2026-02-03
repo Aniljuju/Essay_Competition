@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Competitions - Essay Competition{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h1 class="mb-4">All Competitions</h1>
+
+            {% if competitions %}
+            <div class="row g-4">
+                {% for competition in competitions %}
+                <div class="col-md-6">
+                    <div class="card competition-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ competition.title }}</h5>
+                            <p class="card-text">
+                                {{ competition.description|truncatewords:30 }}
+                            </p>
+
+                            <div class="competition-meta mb-3">
+                                <div class="meta-item">
+                                    <small class="text-muted">Start:</small>
+                                    <span>{{ competition.start_date|date:"M d, Y g:i A" }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <small class="text-muted">End:</small>
+                                    <span>{{ competition.end_date|date:"M d, Y g:i A" }}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <small class="text-muted">Max Paragraphs:</small>
+                                    <span>{{ competition.max_paragraphs }}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center">
+                                <!-- STATUS BADGES -->
+                                <div>
+                                    {% if competition.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                    {% elif not competition.has_started %}
+                                    <span class="badge bg-warning">Upcoming</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Ended</span>
+                                    {% endif %}
+
+                                    {% if competition.user_essay %}
+                                    {% if competition.user_essay.status == 'in_progress' %}
+                                    <span class="badge bg-info">In Progress</span>
+                                    {% elif competition.user_essay.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif competition.user_essay.status == 'locked' %}
+                                    <span class="badge bg-dark">Locked</span>
+                                    {% endif %}
+                                    {% endif %}
+                                </div>
+
+                                <!-- ACTION BUTTONS -->
+                                <div>
+                                    {% if competition.user_essay %}
+                                    {% if competition.user_essay.status == 'in_progress' and competition.is_active %}
+                                    <a href="{% url 'essay_write' competition.id %}" class="btn btn-primary btn-sm">
+                                        Continue Writing
+                                    </a>
+                                    {% else %}
+                                    <a href="{% url 'essay_view' competition.user_essay.id %}"
+                                        class="btn btn-secondary btn-sm">
+                                        View Essay
+                                    </a>
+                                    {% endif %}
+                                    {% else %}
+                                    {% if competition.is_active %}
+                                    <a href="{% url 'essay_write' competition.id %}" class="btn btn-primary btn-sm">
+                                        Start Writing
+                                    </a>
+                                    {% elif not competition.has_started %}
+                                    <button class="btn btn-secondary btn-sm" disabled>
+                                        Not Started
+                                    </button>
+                                    {% endif %}
+                                    {% endif %}
+
+                                    {% if competition.has_ended %}
+                                    <a href="{% url 'leaderboard' competition.id %}" class="btn btn-info btn-sm ms-1">
+                                        Leaderboard
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No competitions available at the moment. Check back later!
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

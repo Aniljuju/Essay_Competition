@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Essay Competition{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-75">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-3 fw-bold mb-4">Welcome to Essay Competition Platform</h1>
+                <p class="lead mb-5">
+                    A controlled essay writing competition system where participants write essays paragraph by
+                    paragraph.
+                    Once written, paragraphs cannot be edited or deleted. Challenge yourself and compete with others!
+                </p>
+                {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5">Go to Dashboard</a>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-5">Login to Participate</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+            <h2 class="text-center mb-5">How It Works</h2>
+
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">1</div>
+                        <h4>Account Verification</h4>
+                        <p>Admin creates your account and verifies you. Only verified users can participate in
+                            competitions.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">2</div>
+                        <h4>Write Paragraphs</h4>
+                        <p>Write your essay one paragraph at a time. Once submitted, paragraphs are locked and cannot be
+                            changed.</p>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="feature-card">
+                        <div class="feature-icon">3</div>
+                        <h4>Compete & Win</h4>
+                        <p>Complete your essay within the deadline. Rankings are based on completion time and word
+                            count.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="cta-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h2 class="mb-4">Ready to Start Writing?</h2>
+                <p class="lead mb-4">Join our community of writers and showcase your skills in timed essay competitions.
+                </p>
+                {% if not user.is_authenticated %}
+                <p class="text-muted">Contact the administrator to get your account created and verified.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

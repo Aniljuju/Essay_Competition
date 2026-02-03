@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Leaderboard - {{ competition.title }}{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row">
+        <div class="col-lg-10 mx-auto">
+
+            <h1 class="mb-2">Leaderboard</h1>
+            <h3 class="text-muted mb-4">{{ competition.title }}</h3>
+
+            <!-- Competition Info -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small class="text-muted">Competition Period</small>
+                            <div>
+                                {{ competition.start_date|date:"M d, Y" }} -
+                                {{ competition.end_date|date:"M d, Y" }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Max Paragraphs</small>
+                            <div>{{ competition.max_paragraphs }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Total Submissions</small>
+                            <div>{{ essays|length }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Rankings</h5>
+                    <small>
+                        Sorted by completion time (fastest first),
+                        then word count (highest first)
+                    </small>
+                </div>
+
+                <div class="card-body p-0">
+                    {% if essays %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0 leaderboard-table">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="text-center" style="width: 80px;">Rank</th>
+                                    <th>Participant</th>
+                                    <th class="text-center">Paragraphs</th>
+                                    <th class="text-center">Word Count</th>
+                                    <th>Completion Time</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {% for essay in essays %}
+                                <tr {% if essay.user == user %}class="table-primary" {% endif %}>
+
+                                    <!-- Rank -->
+                                    <td class="text-center">
+                                        {% if forloop.counter == 1 %}
+                                        <span class="badge bg-warning text-dark fs-6">🥇 1st</span>
+                                        {% elif forloop.counter == 2 %}
+                                        <span class="badge bg-secondary fs-6">🥈 2nd</span>
+                                        {% elif forloop.counter == 3 %}
+                                        <span class="badge bg-secondary fs-6">🥉 3rd</span>
+                                        {% else %}
+                                        <span class="badge bg-light text-dark">
+                                            {{ forloop.counter }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Participant -->
+                                    <td>
+                                        <strong>{{ essay.user.username }}</strong>
+                                        {% if essay.user == user %}
+                                        <span class="badge bg-info ms-2">You</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <!-- Paragraph Count -->
+                                    <td class="text-center">
+                                        {{ essay.current_paragraph_count }}
+                                    </td>
+
+                                    <!-- Word Count -->
+                                    <td class="text-center">
+                                        {{ essay.word_count }}
+                                    </td>
+
+                                    <!-- Completion Time -->
+                                    <td>
+                                        {{ essay.completed_at|date:"M d, Y g:i A" }}
+                                    </td>
+
+                                    <!-- Action -->
+                                    <td class="text-center">
+                                        {% if essay.user == user or user.is_staff %}
+                                        <a href="{% url 'essay_view' essay.id %}"
+                                            class="btn btn-sm btn-outline-primary">
+                                            View
+                                        </a>
+                                        {% else %}
+                                        <span class="text-muted small">Private</span>
+                                        {% endif %}
+                                    </td>
+
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-muted mb-0">
+                            No completed essays yet for this competition.
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Back Button -->
+            <div class="text-center mt-4">
+                <a href="{% url 'competition_list' %}" class="btn btn-secondary">
+                    Back to Competitions
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
