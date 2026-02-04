@@ -2,7 +2,6 @@
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,89 +12,119 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- Smooth Scroll -->
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
-                <img src="{% static 'images/lekhani.png' %}" alt="Lekhni Logo" class="navbar-logo ">
-                <span>Lekhani</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+            <img src="{% static 'images/lekhani.png' %}" alt="Lekhni Logo" class="navbar-logo">
+            <span>Lekhani</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+
+                <!-- Public Links -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}#how-it-works">How It Works</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}#contact">Contact</a>
+                </li>
+
+                <!-- Authenticated Links -->
+                {% if user.is_authenticated %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
                     </li>
+
                     {% if user.profile.status == 'verified' %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'competition_list' %}">Competitions</a>
                     </li>
                     {% endif %}
+
                     {% if user.is_staff %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'admin_dashboard' %}">Admin Panel</a>
                     </li>
                     {% endif %}
+
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
-                    {% else %}
+                {% else %}
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'login' %}">Login</a>
                     </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
+                {% endif %}
 
-    <!-- Messages -->
-    {% if messages %}
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-        {% for message in messages %}
-        <div class="toast text-bg-{{ message.tags }} border-0 mb-2" role="alert" aria-live="assertive" aria-atomic="true"
-            data-bs-delay="3000">
-    
-            <div class="d-flex">
-                <div class="toast-body">
-                    {{ message }}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
-            </div>
+            </ul>
         </div>
-        {% endfor %}
     </div>
-    {% endif %}
+</nav>
 
-
-    <!-- Main Content -->
-    <main class="main-content">
-        {% block content %}
-        {% endblock %}
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer bg-dark text-white text-center py-4 mt-5">
-        <div class="container">
-            <p class="mb-0">&copy; 2026 Essay Competition Platform. All rights reserved.</p>
+<!-- Messages -->
+{% if messages %}
+<div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100;">
+    {% for message in messages %}
+    <div class="toast text-bg-{{ message.tags }} border-0 mb-2"
+         role="alert"
+         aria-live="assertive"
+         aria-atomic="true"
+         data-bs-delay="3000">
+        <div class="d-flex">
+            <div class="toast-body">
+                {{ message }}
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto"
+                    data-bs-dismiss="toast"></button>
         </div>
-    </footer>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Main Content -->
+<main class="main-content">
+    {% block content %}{% endblock %}
+</main>
+
+<!-- Footer -->
+<footer class="footer bg-dark text-white text-center py-4 mt-5">
+    <div class="container">
+        <p class="mb-0">&copy; 2026 Essay Competition Platform. All rights reserved.</p>
+    </div>
+</footer>
+
+<!-- Toast Script -->
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-        const toastEls = document.querySelectorAll('.toast');
-        toastEls.forEach(function (toastEl) {
+        document.querySelectorAll('.toast').forEach(toastEl => {
             new bootstrap.Toast(toastEl).show();
         });
     });
 </script>
 
-    <!-- Bootstrap 5 JS Bundle -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>

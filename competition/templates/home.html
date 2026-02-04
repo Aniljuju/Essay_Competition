@@ -3,38 +3,50 @@
 {% block title %}Home - Essay Competition{% endblock %}
 
 {% block content %}
-<div class="hero-section">
+
+<!-- HERO SECTION -->
+<section class="hero-section" id="home">
     <div class="container">
         <div class="row align-items-center min-vh-75">
             <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-3 fw-bold mb-4">Welcome to Essay Competition Platform</h1>
+                <h1 class="display-3 fw-bold mb-4">
+                    Welcome to Lekhani
+                </h1>
                 <p class="lead mb-5">
-                    A controlled essay writing competition system where participants write essays paragraph by
-                    paragraph.
-                    Once written, paragraphs cannot be edited or deleted. Challenge yourself and compete with others!
+                    A controlled essay writing competition platform where participants write
+                    paragraph by paragraph. Once submitted, content is locked to ensure fairness.
                 </p>
+
                 {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5">Go to Dashboard</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5">
+                    Go to Dashboard
+                </a>
                 {% else %}
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-5">Login to Participate</a>
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-5">
+                    Login to Participate
+                </a>
                 {% endif %}
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="container my-5">
+<!-- HOW IT WORKS -->
+<section class="container my-5" id="how-it-works">
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <h2 class="text-center mb-5">How It Works</h2>
 
             <div class="row g-4">
+
                 <div class="col-md-4">
                     <div class="feature-card">
                         <div class="feature-icon">1</div>
                         <h4>Account Verification</h4>
-                        <p>Admin creates your account and verifies you. Only verified users can participate in
-                            competitions.</p>
+                        <p>
+                            Admin creates and verifies participant accounts.
+                            Only verified users can join competitions.
+                        </p>
                     </div>
                 </div>
 
@@ -42,8 +54,10 @@
                     <div class="feature-card">
                         <div class="feature-icon">2</div>
                         <h4>Write Paragraphs</h4>
-                        <p>Write your essay one paragraph at a time. Once submitted, paragraphs are locked and cannot be
-                            changed.</p>
+                        <p>
+                            Essays are written one paragraph at a time.
+                            Once submitted, paragraphs cannot be edited.
+                        </p>
                     </div>
                 </div>
 
@@ -51,27 +65,70 @@
                     <div class="feature-card">
                         <div class="feature-icon">3</div>
                         <h4>Compete & Win</h4>
-                        <p>Complete your essay within the deadline. Rankings are based on completion time and word
-                            count.</p>
+                        <p>
+                            Finish before the deadline. Rankings are based on
+                            completion time and word count.
+                        </p>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
-</div>
+</section>
 
-<div class="cta-section">
+<!-- CONTACT SECTION -->
+<section class="cta-section" id="contact">
     <div class="container">
         <div class="row">
             <div class="col-lg-8 mx-auto text-center">
-                <h2 class="mb-4">Ready to Start Writing?</h2>
-                <p class="lead mb-4">Join our community of writers and showcase your skills in timed essay competitions.
+
+                <h2 class="mb-4">Contact Us</h2>
+                <p class="lead mb-4">
+                    Have questions, feedback, or suggestions?
+                    Reach out to us anytime.
                 </p>
-                {% if not user.is_authenticated %}
-                <p class="text-muted">Contact the administrator to get your account created and verified.</p>
-                {% endif %}
+
+                <div class="card shadow-custom border-gradient text-start">
+                    <div class="card-body">
+
+                        <form method="post">
+                            {% csrf_token %}
+
+                            <div class="mb-3">
+                                <label class="form-label">Your Name</label>
+                                <input type="text" class="form-control" placeholder="Enter your name" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Email Address</label>
+                                <input type="email" class="form-control" placeholder="Enter your email" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Message</label>
+                                <textarea class="form-control" rows="4" placeholder="Write your message here..."
+                                    required></textarea>
+                            </div>
+
+                            <div class="text-center">
+                                <button class="btn btn-primary btn-lg">
+                                    Send Message
+                                </button>
+                            </div>
+
+                        </form>
+
+                        <p class="text-muted text-center mt-3 mb-0">
+                            Messages will be reviewed by the admin.
+                        </p>
+
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
-</div>
+</section>
+
 {% endblock %}
