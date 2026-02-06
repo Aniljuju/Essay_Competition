@@ -47,6 +47,36 @@
                     </div>
                 </div>
             </div>
+            {% if essay.status != 'in_progress' %}
+            <div class="card mb-4">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Language Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <small class="text-muted">Grammar Errors</small>
+                            <div class="fs-5 fw-bold text-danger">
+                                {{ essay.grammar_errors }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Spelling Errors</small>
+                            <div class="fs-5 fw-bold text-warning">
+                                {{ essay.spelling_errors }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <small class="text-muted">Grammar Score</small>
+                            <div class="fs-5 fw-bold text-success">
+                                {{ essay.grammar_score }} / 100
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
 
             <!-- Essay Content -->
             <div class="card mb-4">

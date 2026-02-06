@@ -76,6 +76,45 @@ class Essay(models.Model):
     started_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     word_count = models.PositiveIntegerField(default=0)
+
+    grammar_errors = models.PositiveIntegerField(default=0)
+    spelling_errors = models.PositiveIntegerField(default=0)
+    grammar_score = models.PositiveIntegerField(default=100)
+
+    def analyze_grammar(self):
+     import language_tool_python
+
+    # Instantiate the tool
+     tool = language_tool_python.LanguageTool('en-US')
+
+    # Combine all paragraph content
+     full_text = " ".join(
+        p.content for p in self.paragraphs.all().order_by('order')
+     )
+
+    # Check for grammar and spelling mistakes
+     matches = tool.check(full_text)
+
+     grammar_errors = 0
+     spelling_errors = 0
+
+     for match in matches:
+         if match.rule_issue_type == 'misspelling':
+            spelling_errors += 1
+         else:
+            grammar_errors += 1
+
+     total_errors = grammar_errors + spelling_errors
+
+    # Scoring logic (adjustable)
+     score = max(0, 100 - (total_errors * 2))
+
+    # Save results to the model fields
+     self.grammar_errors = grammar_errors
+     self.spelling_errors = spelling_errors
+     self.grammar_score = score
+
+
     
     def __str__(self):
         return f"{self.user.username} - {self.competition.title}"
@@ -104,6 +143,8 @@ class Essay(models.Model):
             self.status = 'completed'
             self.completed_at = timezone.now()
             self.word_count = self.calculate_word_count()
+            self.save()
+            self.analyze_grammar()
             self.save()
     
     class Meta:
