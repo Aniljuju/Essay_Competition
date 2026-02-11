@@ -12,10 +12,14 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Account Status</h5>
+
                     {% if user_profile %}
                     <div class="d-flex align-items-center">
                         <span class="me-3">Status:</span>
-                        {% if user_profile.status == 'verified' %}
+
+                        {% if user.is_staff or user.is_superuser %}
+                        <span class="badge bg-success">Admin</span>
+                        {% elif user_profile.status == 'verified' %}
                         <span class="badge bg-success">Verified</span>
                         {% elif user_profile.status == 'pending' %}
                         <span class="badge bg-warning">Pending Approval</span>
@@ -24,27 +28,30 @@
                         {% endif %}
                     </div>
 
-                    {% if user_profile.status == 'pending' %}
+                    <!-- Pending Message (NOT for Admin) -->
+                    {% if not user.is_staff and not user.is_superuser and user_profile.status == 'pending' %}
                     <div class="alert alert-info mt-3 mb-0">
-                        Your account is pending verification. You will be able to participate in competitions once an
-                        administrator verifies your account.
+                        Your account is under verification. You will be able to participate in competitions once your
+                        account is approved.
                     </div>
                     {% elif user_profile.status == 'rejected' %}
                     <div class="alert alert-danger mt-3 mb-0">
-                        Your account has been rejected. Please contact the administrator for more information.
+                        Your account has been rejected. Please contact support for more information.
                     </div>
                     {% endif %}
+
                     {% else %}
-                    <p class="text-muted mb-0">Profile not found. Please contact administrator.</p>
+                    <p class="text-muted mb-0">Profile not found.</p>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Active Competitions (Verified Users Only) -->
-            {% if user_profile.status == 'verified' %}
+            <!-- Active Competitions (Verified Users + Admin) -->
+            {% if user.is_staff or user.is_superuser or user_profile.status == 'verified' %}
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">Active Competitions</h5>
+
                     {% if active_competitions %}
                     <div class="list-group list-group-flush">
                         {% for competition in active_competitions %}
@@ -52,10 +59,16 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h6 class="mb-1">{{ competition.title }}</h6>
-                                    <p class="mb-1 text-muted small">{{ competition.description|truncatewords:20 }}</p>
-                                    <small class="text-muted">Ends: {{ competition.end_date|date:"M d, Y g:i A"}}</small>
+                                    <p class="mb-1 text-muted small">
+                                        {{ competition.description|truncatewords:20 }}
+                                    </p>
+                                    <small class="text-muted">
+                                        Ends: {{ competition.end_date|date:"M d, Y g:i A" }}
+                                    </small>
                                 </div>
-                                <a href="{% url 'competition_list' %}" class="btn btn-sm btn-primary">View Details</a>
+                                <a href="{% url 'competition_list' %}" class="btn btn-sm btn-primary">
+                                    View Details
+                                </a>
                             </div>
                         </div>
                         {% endfor %}
@@ -71,6 +84,7 @@
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">My Essays</h5>
+
                     {% if user_essays %}
                     <div class="table-responsive">
                         <table class="table table-hover">
@@ -97,17 +111,22 @@
                                         <span class="badge bg-secondary">Locked</span>
                                         {% endif %}
                                     </td>
-                                    <td>{{ essay.current_paragraph_count }} / {{ essay.competition.max_paragraphs }}
+                                    <td>
+                                        {{ essay.current_paragraph_count }} /
+                                        {{ essay.competition.max_paragraphs }}
                                     </td>
                                     <td>{{ essay.word_count }}</td>
                                     <td>{{ essay.started_at|date:"M d, Y" }}</td>
                                     <td>
                                         {% if essay.status == 'in_progress' and essay.competition.is_active %}
                                         <a href="{% url 'essay_write' essay.competition.id %}"
-                                            class="btn btn-sm btn-primary">Continue</a>
+                                            class="btn btn-sm btn-primary">
+                                            Continue
+                                        </a>
                                         {% else %}
-                                        <a href="{% url 'essay_view' essay.id %}"
-                                            class="btn btn-sm btn-secondary">View</a>
+                                        <a href="{% url 'essay_view' essay.id %}" class="btn btn-sm btn-secondary">
+                                            View
+                                        </a>
                                         {% endif %}
                                     </td>
                                 </tr>
@@ -116,16 +135,22 @@
                         </table>
                     </div>
                     {% else %}
-                    <p class="text-muted mb-0">You haven't started any essays yet.</p>
+                    <p class="text-muted mb-0">
+                        You haven't started any essays yet.
+                    </p>
                     {% endif %}
                 </div>
             </div>
 
-            {% if user_profile.status == 'verified' %}
+            <!-- Browse Button (Verified + Admin) -->
+            {% if user.is_staff or user.is_superuser or user_profile.status == 'verified' %}
             <div class="text-center mt-4">
-                <a href="{% url 'competition_list' %}" class="btn btn-primary btn-lg">Browse All Competitions</a>
+                <a href="{% url 'competition_list' %}" class="btn btn-primary btn-lg">
+                    Browse All Competitions
+                </a>
             </div>
             {% endif %}
+
         </div>
     </div>
 </div>
