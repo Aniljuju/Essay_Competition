@@ -1,12 +1,13 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
+import language_tool_python
+
+# load grammar tool once (performance optimization)
+tool = language_tool_python.LanguageTool('en-US')
 
 
 class UserProfile(models.Model):
-    """
-    Extended user profile with verification status
-    """
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('verified', 'Verified'),
@@ -20,16 +21,13 @@ class UserProfile(models.Model):
     
     def __str__(self):
         return f"{self.user.username} - {self.status}"
-    
+
     class Meta:
         verbose_name = 'User Profile'
         verbose_name_plural = 'User Profiles'
 
 
 class Competition(models.Model):
-    """
-    Essay writing competition
-    """
     title = models.CharField(max_length=200)
     description = models.TextField()
     start_date = models.DateTimeField()
@@ -42,16 +40,13 @@ class Competition(models.Model):
         return self.title
     
     def is_active(self):
-        """Check if competition is currently active"""
         now = timezone.now()
         return self.start_date <= now <= self.end_date
     
     def has_started(self):
-        """Check if competition has started"""
         return timezone.now() >= self.start_date
     
     def has_ended(self):
-        """Check if competition has ended"""
         return timezone.now() > self.end_date
     
     class Meta:
@@ -61,9 +56,6 @@ class Competition(models.Model):
 
 
 class Essay(models.Model):
-    """
-    Essay submitted by user for a competition
-    """
     STATUS_CHOICES = [
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),
@@ -80,73 +72,94 @@ class Essay(models.Model):
     grammar_errors = models.PositiveIntegerField(default=0)
     spelling_errors = models.PositiveIntegerField(default=0)
     grammar_score = models.PositiveIntegerField(default=100)
+    final_score = models.FloatField(default=0)   # ⭐ NEW FIELD
 
-    def analyze_grammar(self):
-     import language_tool_python
-
-    # Instantiate the tool
-     tool = language_tool_python.LanguageTool('en-US')
-
-    # Combine all paragraph content
-     full_text = " ".join(
-        p.content for p in self.paragraphs.all().order_by('order')
-     )
-
-    # Check for grammar and spelling mistakes
-     matches = tool.check(full_text)
-
-     grammar_errors = 0
-     spelling_errors = 0
-
-     for match in matches:
-         if match.rule_issue_type == 'misspelling':
-            spelling_errors += 1
-         else:
-            grammar_errors += 1
-
-     total_errors = grammar_errors + spelling_errors
-
-    # Scoring logic (adjustable)
-     score = max(0, 100 - (total_errors * 2))
-
-    # Save results to the model fields
-     self.grammar_errors = grammar_errors
-     self.spelling_errors = spelling_errors
-     self.grammar_score = score
-
-
-    
     def __str__(self):
         return f"{self.user.username} - {self.competition.title}"
-    
+
     def current_paragraph_count(self):
-        """Get current number of paragraphs"""
         return self.paragraphs.count()
     
     def can_add_paragraph(self):
-        """Check if user can add more paragraphs"""
         return (
             self.status == 'in_progress' and
             self.current_paragraph_count() < self.competition.max_paragraphs
         )
-    
+
     def calculate_word_count(self):
-        """Calculate total word count from all paragraphs"""
         total = 0
         for paragraph in self.paragraphs.all():
             total += len(paragraph.content.split())
         return total
-    
+
+    # ===============================
+    # GRAMMAR + SPELL CHECK
+    # ===============================
+    def analyze_grammar(self):
+        try:
+            full_text = " ".join(
+                p.content for p in self.paragraphs.all().order_by('order')
+            )
+
+            matches = tool.check(full_text)
+
+            grammar_errors = 0
+            spelling_errors = 0
+
+            for match in matches:
+                if match.rule_issue_type == 'misspelling':
+                    spelling_errors += 1
+                else:
+                    grammar_errors += 1
+
+            total_errors = grammar_errors + spelling_errors
+            score = max(0, 100 - (total_errors * 2))
+
+            self.grammar_errors = grammar_errors
+            self.spelling_errors = spelling_errors
+            self.grammar_score = score
+
+        except Exception:
+            # if grammar tool fails, don't crash submission
+            self.grammar_errors = 0
+            self.spelling_errors = 0
+            self.grammar_score = 100
+
+    # ===============================
+    # FINAL JUDGE SCORE
+    # ===============================
+    def calculate_final_score(self, fastest_time, max_words):
+        if not self.completed_at:
+            return
+
+        user_time = (self.completed_at - self.started_at).total_seconds()
+        fastest_seconds = fastest_time.total_seconds()
+
+        speed_score = (fastest_seconds / user_time) * 100 if user_time > 0 else 0
+        word_score = (self.word_count / max_words) * 100 if max_words > 0 else 0
+        spelling_score = max(0, 100 - (self.spelling_errors * 3))
+
+        final = (
+            speed_score * 0.30 +
+            word_score * 0.20 +
+            self.grammar_score * 0.30 +
+            spelling_score * 0.20
+        )
+
+        self.final_score = round(final, 2)
+        self.save()
+
+    # ===============================
+    # COMPLETE ESSAY
+    # ===============================
     def complete_essay(self):
-        """Mark essay as completed"""
         if self.status == 'in_progress':
             self.status = 'completed'
             self.completed_at = timezone.now()
             self.word_count = self.calculate_word_count()
-            self.save()
             self.analyze_grammar()
             self.save()
-    
+
     class Meta:
         ordering = ['-started_at']
         unique_together = ['user', 'competition']
@@ -155,9 +168,6 @@ class Essay(models.Model):
 
 
 class Paragraph(models.Model):
-    """
-    Individual paragraph in an essay
-    """
     essay = models.ForeignKey(Essay, on_delete=models.CASCADE, related_name='paragraphs')
     order = models.PositiveIntegerField()
     content = models.TextField()

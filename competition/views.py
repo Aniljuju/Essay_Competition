@@ -191,27 +191,44 @@ def essay_view(request, essay_id):
 
 @login_required
 def leaderboard(request, competition_id):
-    """
-    Show leaderboard for a competition (only after competition ends)
-    """
     competition = get_object_or_404(Competition, id=competition_id)
-    
-    # Check if competition has ended
+
     if not competition.has_ended():
         messages.error(request, 'Leaderboard will be available after the competition ends.')
         return redirect('competition_list')
-    
-    # Get completed essays, sorted by completion time (asc) then word count (desc)
+
     essays = Essay.objects.filter(
         competition=competition,
         status__in=['completed', 'locked']
-    ).select_related('user').order_by('completed_at', '-word_count')
-    
+    ).select_related('user')
+
+    if essays.exists():
+
+        # safest way to get fastest time
+        valid_times = [
+            (e.completed_at - e.started_at)
+            for e in essays
+            if e.completed_at and e.started_at
+        ]
+
+        if valid_times:
+            fastest_time = min(valid_times, key=lambda t: t.total_seconds())
+        else:
+            fastest_time = None
+
+        max_words = max((e.word_count for e in essays), default=0)
+
+        for essay in essays:
+            if fastest_time:
+                essay.calculate_final_score(fastest_time, max_words)
+
+    essays = essays.order_by('-final_score')
+
     context = {
         'competition': competition,
         'essays': essays,
     }
-    
+
     return render(request, 'leaderboard.html', context)
 
 
