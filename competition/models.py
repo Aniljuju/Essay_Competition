@@ -1,9 +1,9 @@
+from .ai.topic_checker import get_topic_score
 from django.db import models
 from django.contrib.auth.models import User
 from django.utils import timezone
 import language_tool_python
 
-# load grammar tool once (performance optimization)
 tool = language_tool_python.LanguageTool('en-US')
 
 
@@ -139,11 +139,24 @@ class Essay(models.Model):
         word_score = (self.word_count / max_words) * 100 if max_words > 0 else 0
         spelling_score = max(0, 100 - (self.spelling_errors * 3))
 
+        full_text =  " ".join(
+            p.content for p in self.paragraphs.all().order_by('order')
+        )
+
+        #topic similarity score
+        topic = self.competition.title
+        similarity = get_topic_score(topic, full_text)
+        topic_score = similarity * 100
+
+        if similarity < 0.5:
+            topic_score = 0
+
         final = (
-            speed_score * 0.30 +
-            word_score * 0.20 +
-            self.grammar_score * 0.30 +
-            spelling_score * 0.20
+            speed_score * 0.25 +
+            word_score * 0.15 +
+            self.grammar_score * 0.25 +
+            spelling_score * 0.15 +
+            topic_score * 0.20
         )
 
         self.final_score = round(final, 2)
