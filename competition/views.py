@@ -203,25 +203,18 @@ def leaderboard(request, competition_id):
     ).select_related('user')
 
     if essays.exists():
-
-        # safest way to get fastest time
+        # Step 2a: Calculate average time
         valid_times = [
-            (e.completed_at - e.started_at)
-            for e in essays
-            if e.completed_at and e.started_at
+            (e.completed_at - e.started_at).total_seconds()
+            for e in essays if e.completed_at and e.started_at
         ]
+        avg_time_seconds = sum(valid_times)/len(valid_times) if valid_times else 1  # prevent div by zero
 
-        if valid_times:
-            fastest_time = min(valid_times, key=lambda t: t.total_seconds())
-        else:
-            fastest_time = None
-
-        max_words = max((e.word_count for e in essays), default=0)
-
+        # Step 2b: Calculate final score for each essay
         for essay in essays:
-            if fastest_time:
-                essay.calculate_final_score(fastest_time, max_words)
+            essay.calculate_final_score(avg_time_seconds)
 
+    # Step 2c: Order by final_score descending
     essays = essays.order_by('-final_score')
 
     context = {

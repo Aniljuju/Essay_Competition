@@ -125,38 +125,45 @@ class Essay(models.Model):
             self.spelling_errors = 0
             self.grammar_score = 100
 
-    # ===============================
+        # ===============================
     # FINAL JUDGE SCORE
     # ===============================
-    def calculate_final_score(self, fastest_time, max_words):
+    def calculate_final_score(self, avg_time_seconds, optimal_words=500):
+
         if not self.completed_at:
             return
 
+        # --- SPEED SCORE ---
         user_time = (self.completed_at - self.started_at).total_seconds()
-        fastest_seconds = fastest_time.total_seconds()
+        if user_time > 0:
+            speed_score = max(0, 100 - ((user_time - avg_time_seconds) / avg_time_seconds) * 50)
+        else:
+            speed_score = 0
 
-        speed_score = (fastest_seconds / user_time) * 100 if user_time > 0 else 0
-        word_score = (self.word_count / max_words) * 100 if max_words > 0 else 0
-        spelling_score = max(0, 100 - (self.spelling_errors * 3))
+        # --- WORD SCORE ---
+        if self.word_count <= optimal_words:
+            word_score = (self.word_count / optimal_words) * 100
+        else:
+            word_score = max(100 - ((self.word_count - optimal_words) / optimal_words) * 50, 50)
 
-        full_text =  " ".join(
-            p.content for p in self.paragraphs.all().order_by('order')
-        )
+        # --- GRAMMAR & SPELLING ---
+        grammar_penalty = min(5, self.grammar_errors) + min(5, self.spelling_errors)
+        grammar_score = max(0, 100 - grammar_penalty)
+        spelling_score = max(0, 100 - self.spelling_errors * 2)
 
-        #topic similarity score
+        # --- TOPIC SCORE ---
+        full_text = " ".join(p.content for p in self.paragraphs.all().order_by('order'))
         topic = self.competition.title
         similarity = get_topic_score(topic, full_text)
-        topic_score = similarity * 100
+        topic_score = max(0, similarity * 100)
 
-        if similarity < 0.5:
-            topic_score = 0
-
+        # --- FINAL SCORE ---
         final = (
-            speed_score * 0.25 +
+            speed_score * 0.15 +
             word_score * 0.15 +
-            self.grammar_score * 0.25 +
+            grammar_score * 0.25 +
             spelling_score * 0.15 +
-            topic_score * 0.20
+            topic_score * 0.30
         )
 
         self.final_score = round(final, 2)
