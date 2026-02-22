@@ -22,6 +22,9 @@ def login_view(request):
     User login view
     """
     if request.user.is_authenticated:
+        # already logged in → redirect based on role
+        if request.user.is_superuser:
+            return redirect('custom_admin:dashboard')
         return redirect('dashboard')
     
     if request.method == 'POST':
@@ -33,11 +36,17 @@ def login_view(request):
         if user is not None:
             login(request, user)
             messages.success(request, f'Welcome back, {user.username}!')
-            return redirect('dashboard')
+
+            # ⭐ ROLE BASED REDIRECT
+            if user.is_superuser:
+                return redirect('custom_admin:dashboard')
+            else:
+                return redirect('dashboard')
         else:
             messages.error(request, 'Invalid username or password.')
     
     return render(request, 'login.html')
+
 
 
 def logout_view(request):
