@@ -1,0 +1,36 @@
+{% extends "custom_admin/base.html" %}
+{% block title %}New Competition{% endblock %}
+{% block page_title %}Create Competition{% endblock %}
+{% block active_competitions %}active{% endblock %}
+
+{% block content %}
+<div style="max-width:640px;">
+  <div class="page-header mb-4">
+    <h2 class="section-title">New Competition</h2>
+    <a href="{% url 'custom_admin:dashboard' %}" class="btn-outline">
+      <i class="bi bi-arrow-left"></i> Back
+    </a>
+  </div>
+  <div class="ca-card">
+    <div class="ca-card-body" style="padding:28px;">
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+        <div class="mb-4">
+          <label class="form-field-label">
+            {{ field.label }}{% if field.field.required %} <span style="color:#dc3545;">*</span>{% endif %}
+          </label>
+          {{ field }}
+          {% if field.help_text %}<small class="form-help">{{ field.help_text }}</small>{% endif %}
+          {% if field.errors %}<div class="form-error">{{ field.errors|join:", " }}</div>{% endif %}
+        </div>
+        {% endfor %}
+        <div class="d-flex gap-3 mt-4">
+          <button type="submit" class="btn-navy"><i class="bi bi-plus-circle-fill"></i> Create Competition</button>
+          <a href="{% url 'custom_admin:dashboard' %}" class="btn-outline">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

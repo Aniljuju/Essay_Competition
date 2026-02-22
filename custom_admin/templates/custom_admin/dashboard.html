@@ -1,0 +1,172 @@
+{% extends "custom_admin/base.html" %}
+{% load static %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+{% block active_dashboard %}active{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+  <div class="stat-card" style="--sc:#0f1f38;--sb:rgba(15,31,56,.1);">
+    <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
+    <div><div class="stat-value">{{ total_users }}</div><div class="stat-label">Total Users</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#d97706;--sb:rgba(217,119,6,.1);">
+    <div class="stat-icon"><i class="bi bi-hourglass-split"></i></div>
+    <div><div class="stat-value">{{ pending_users }}</div><div class="stat-label">Pending</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#059669;--sb:rgba(5,150,105,.1);">
+    <div class="stat-icon"><i class="bi bi-patch-check-fill"></i></div>
+    <div><div class="stat-value">{{ verified_users }}</div><div class="stat-label">Verified</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#dc3545;--sb:rgba(220,53,69,.1);">
+    <div class="stat-icon"><i class="bi bi-x-circle-fill"></i></div>
+    <div><div class="stat-value">{{ rejected_users }}</div><div class="stat-label">Rejected</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#1565c0;--sb:rgba(21,101,192,.1);">
+    <div class="stat-icon"><i class="bi bi-trophy-fill"></i></div>
+    <div><div class="stat-value">{{ total_competitions }}</div><div class="stat-label">Competitions</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#059669;--sb:rgba(5,150,105,.1);">
+    <div class="stat-icon"><i class="bi bi-lightning-charge-fill"></i></div>
+    <div><div class="stat-value">{{ active_competitions }}</div><div class="stat-label">Active Now</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#6d28d9;--sb:rgba(109,40,217,.1);">
+    <div class="stat-icon"><i class="bi bi-file-earmark-text-fill"></i></div>
+    <div><div class="stat-value">{{ total_essays }}</div><div class="stat-label">Total Essays</div></div>
+  </div>
+  <div class="stat-card" style="--sc:#059669;--sb:rgba(5,150,105,.1);">
+    <div class="stat-icon"><i class="bi bi-check2-all"></i></div>
+    <div><div class="stat-value">{{ completed_essays }}</div><div class="stat-label">Completed</div></div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row g-3 mb-4">
+  <div class="col-12 col-lg-5">
+    <div class="chart-box">
+      <div class="chart-title">User Status Distribution</div>
+      <div class="chart-wrap"><canvas id="userChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-4">
+    <div class="chart-box">
+      <div class="chart-title">Essay Status Breakdown</div>
+      <div class="chart-wrap"><canvas id="essayChart"></canvas></div>
+    </div>
+  </div>
+  <div class="col-12 col-lg-3">
+    <div class="ca-card h-100">
+      <div class="ca-card-header"><span class="section-title" style="font-size:.95rem;">Quick Actions</span></div>
+      <div class="ca-card-body">
+        <div class="d-flex flex-column gap-2">
+          <a href="{% url 'custom_admin:users' %}" class="btn-navy w-100 justify-content-center">
+            <i class="bi bi-people-fill"></i> Manage Users
+          </a>
+          <a href="{% url 'custom_admin:create_competition' %}" class="btn-gold w-100 justify-content-center">
+            <i class="bi bi-plus-circle-fill"></i> New Competition
+          </a>
+          <a href="{% url 'custom_admin:essays' %}" class="btn-outline w-100 justify-content-center">
+            <i class="bi bi-file-earmark-text-fill"></i> Manage Essays
+          </a>
+        </div>
+        {% if overdue_competitions %}
+        <div class="overdue-alert mt-3">
+          <div class="d-flex align-items-center gap-2 mb-1">
+            <i class="bi bi-exclamation-triangle-fill" style="color:#dc3545;"></i>
+            <strong style="font-size:.8rem;color:#991b1b;">{{ overdue_competitions.count }} Overdue Competition{{ overdue_competitions.count|pluralize }}</strong>
+          </div>
+          {% for comp in overdue_competitions|slice:":3" %}
+          <div class="overdue-item">{{ comp.title|truncatechars:30 }}</div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Competition Line Chart -->
+<div class="chart-box mb-4">
+  <div class="chart-title">Competitions Created — Last 12 Months</div>
+  <div class="chart-wrap" style="height:180px;"><canvas id="compChart"></canvas></div>
+</div>
+
+<!-- Top Users + Recent Essays -->
+<div class="row g-3">
+  <div class="col-12 col-lg-4">
+    <div class="ca-card">
+      <div class="ca-card-header">
+        <span class="section-title" style="font-size:.95rem;">
+          <i class="bi bi-star-fill" style="color:#c8973a;margin-right:6px;"></i>Top Writers
+        </span>
+      </div>
+      <table class="ca-table">
+        <thead><tr><th>#</th><th>User</th><th>Done</th></tr></thead>
+        <tbody>
+          {% for u in top_users %}
+          <tr>
+            <td><span class="rank-num rank-{{ forloop.counter }}">#{{ forloop.counter }}</span></td>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar">{{ u.username|first|upper }}</div>
+                <span style="font-size:.875rem;font-weight:500;">{{ u.username }}</span>
+              </div>
+            </td>
+            <td><span style="font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;">{{ u.completed_count }}</span></td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="3" class="empty-cell">No completed essays yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <div class="ca-card">
+      <div class="ca-card-header">
+        <span class="section-title" style="font-size:.95rem;">Recent Essays</span>
+        <a href="{% url 'custom_admin:essays' %}" class="btn-outline btn-sm">View All</a>
+      </div>
+      <table class="ca-table">
+        <thead><tr><th>User</th><th>Competition</th><th>Status</th><th>Started</th></tr></thead>
+        <tbody>
+          {% for essay in recent_essays %}
+          <tr>
+            <td>
+              <div class="d-flex align-items-center gap-2">
+                <div class="avatar">{{ essay.user.username|first|upper }}</div>
+                <span style="font-size:.875rem;">{{ essay.user.username }}</span>
+              </div>
+            </td>
+            <td style="font-size:.82rem;color:var(--ink-mid);max-width:160px;">
+              <span title="{{ essay.competition.title }}">{{ essay.competition.title|truncatechars:24 }}</span>
+            </td>
+            <td>
+              {% if essay.status == 'in_progress' %}<span class="badge badge-progress"><i class="bi bi-pencil-fill"></i> In Progress</span>
+              {% elif essay.status == 'completed' %}<span class="badge badge-completed"><i class="bi bi-check-circle-fill"></i> Completed</span>
+              {% else %}<span class="badge badge-locked"><i class="bi bi-lock-fill"></i> Locked</span>{% endif %}
+            </td>
+            <td style="font-size:.78rem;color:var(--ink-light);">{{ essay.started_at|date:"M d, Y" }}</td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="4" class="empty-cell">No essays yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const USER_CHART_DATA  = {{ user_chart_data|safe }};
+const ESSAY_CHART_DATA = {{ essay_chart_data|safe }};
+const COMP_CHART_DATA  = {{ comp_chart_data|safe }};
+</script>
+<script src="{% static 'custom_admin/js/dashboard.js' %}"></script>
+{% endblock %}

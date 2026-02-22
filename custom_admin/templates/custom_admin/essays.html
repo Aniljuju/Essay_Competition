@@ -1,0 +1,349 @@
+{% extends "custom_admin/base.html" %}
+{% block title %}Essays{% endblock %}
+{% block page_title %}Essay Management{% endblock %}
+{% block active_essays %}active{% endblock %}
+
+{% block content %}
+
+<!-- Info box -->
+<div class="info-box mb-4">
+  <div class="info-box-icon"><i class="bi bi-info-circle-fill"></i></div>
+  <div>
+    <strong style="color:var(--ink);display:block;margin-bottom:6px;">Essay Status Guide</strong>
+    <div class="d-flex flex-wrap gap-3">
+      <span><span class="badge badge-progress"><i class="bi bi-pencil-fill"></i> In Progress</span> <small>{{ summary.in_progress }} essays — user still writing</small></span>
+      <span><span class="badge badge-completed"><i class="bi bi-check-circle-fill"></i> Completed</span> <small>{{ summary.completed }} essays — user submitted</small></span>
+      <span><span class="badge badge-locked"><i class="bi bi-lock-fill"></i> Locked</span> <small>{{ summary.locked }} essays — locked by admin</small></span>
+    </div>
+  </div>
+</div>
+
+<!-- Page header -->
+<div class="page-header">
+  <div>
+    <h2 class="section-title">All Essays</h2>
+    <p class="page-subtitle">
+      {{ total_count }} essay{{ total_count|pluralize }}
+      {% if search_query or status_filter or comp_filter %}
+        · <a href="{% url 'custom_admin:essays' %}" class="clear-link"><i class="bi bi-x-circle"></i> Clear</a>
+      {% endif %}
+    </p>
+  </div>
+</div>
+
+<!-- Filter bar -->
+<form method="get" id="filterForm">
+  <div class="filter-bar">
+    <div class="flex-grow-1" style="min-width:180px;">
+      <input type="text" name="q" class="ca-input" placeholder="Search by username…" value="{{ search_query }}"/>
+    </div>
+    <div style="min-width:180px;">
+      <select name="competition" class="ca-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="">All Competitions</option>
+        {% for comp in competitions %}
+        <option value="{{ comp.pk }}" {% if comp_filter == comp.pk|stringformat:"s" %}selected{% endif %}>
+          {{ comp.title|truncatechars:28 }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div style="min-width:150px;">
+      <select name="status" class="ca-select" onchange="document.getElementById('filterForm').submit()">
+        <option value="">All Statuses</option>
+        <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+        <option value="completed"   {% if status_filter == 'completed'   %}selected{% endif %}>Completed</option>
+        <option value="locked"      {% if status_filter == 'locked'      %}selected{% endif %}>Locked</option>
+      </select>
+    </div>
+    <button type="submit" class="btn-navy"><i class="bi bi-search"></i> Filter</button>
+    {% if search_query or status_filter or comp_filter %}
+    <a href="{% url 'custom_admin:essays' %}" class="btn-outline"><i class="bi bi-x-lg"></i></a>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Table -->
+<div class="ca-table-wrap">
+  <table class="ca-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>User</th>
+        <th>Competition</th>
+        <th>Status</th>
+        <th>Paragraphs</th>
+        <th>Words</th>
+        <th>Score</th>
+        <th>Started</th>
+        <th>Completed</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for essay in essays %}
+      <tr id="essay-row-{{ essay.pk }}">
+
+        <td class="row-num">#{{ essay.pk }}</td>
+
+        <td>
+          <div class="d-flex align-items-center gap-2">
+            <div class="avatar">{{ essay.user.username|first|upper }}</div>
+            <span class="fw-600" style="font-size:.875rem;">{{ essay.user.username }}</span>
+          </div>
+        </td>
+
+        <td style="max-width:150px;">
+          <span class="text-muted-sm" title="{{ essay.competition.title }}">{{ essay.competition.title|truncatechars:22 }}</span>
+        </td>
+
+        <td>
+          <span class="badge {% if essay.status == 'in_progress' %}badge-progress{% elif essay.status == 'completed' %}badge-completed{% else %}badge-locked{% endif %}"
+                id="status-badge-{{ essay.pk }}">
+            {% if essay.status == 'in_progress' %}<i class="bi bi-pencil-fill"></i> In Progress
+            {% elif essay.status == 'completed' %}<i class="bi bi-check-circle-fill"></i> Completed
+            {% else %}<i class="bi bi-lock-fill"></i> Locked{% endif %}
+          </span>
+        </td>
+
+        <td>
+          <span class="fw-600" style="font-size:.875rem;">{{ essay.paragraphs.count }}</span>
+          <span class="text-muted-sm"> / {{ essay.competition.max_paragraphs }}</span>
+        </td>
+
+        <td class="fw-600" style="font-size:.875rem;">{{ essay.word_count|default:"—" }}</td>
+
+        <td>
+          {% if essay.final_score %}
+          {% with s=essay.final_score %}
+          <div class="score-circle {% if s >= 80 %}score-high{% elif s >= 60 %}score-mid{% else %}score-low{% endif %}">
+            {{ s|floatformat:0 }}
+          </div>
+          {% endwith %}
+          {% else %}
+          <div class="score-circle score-none">—</div>
+          {% endif %}
+        </td>
+
+        <td class="text-muted-sm">{{ essay.started_at|date:"M d, Y" }}</td>
+
+        <td class="text-muted-sm">
+          {% if essay.completed_at %}{{ essay.completed_at|date:"M d, Y" }}
+          {% else %}<span style="font-style:italic;">—</span>{% endif %}
+        </td>
+
+        <td>
+          <div class="d-flex gap-2">
+            <button class="btn-icon view-essay-btn"
+                    data-essay-id="{{ essay.pk }}"
+                    data-url="{% url 'custom_admin:essay_detail' essay.pk %}"
+                    title="View Essay">
+              <i class="bi bi-eye-fill"></i>
+            </button>
+            {% if essay.status == 'locked' %}
+            <button class="btn-icon btn-unlock lock-btn"
+                    id="lock-btn-{{ essay.pk }}"
+                    data-essay-id="{{ essay.pk }}"
+                    data-action="unlock"
+                    data-url="{% url 'custom_admin:essay_action' %}"
+                    title="Unlock Essay">
+              <i class="bi bi-unlock-fill"></i>
+            </button>
+            {% else %}
+            <button class="btn-icon btn-lock lock-btn"
+                    id="lock-btn-{{ essay.pk }}"
+                    data-essay-id="{{ essay.pk }}"
+                    data-action="lock"
+                    data-url="{% url 'custom_admin:essay_action' %}"
+                    title="Lock Essay">
+              <i class="bi bi-lock-fill"></i>
+            </button>
+            {% endif %}
+          </div>
+        </td>
+
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="10" class="empty-cell">
+          <i class="bi bi-file-earmark-x" style="font-size:2rem;display:block;margin-bottom:8px;"></i>
+          No essays match your filters.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination -->
+{% if essays.has_other_pages %}
+<div class="ca-pagination">
+  <span class="ca-pagination-info">Page {{ essays.number }} of {{ essays.paginator.num_pages }} · {{ total_count }} essays</span>
+  <div class="ca-pagination-links">
+    {% if essays.has_previous %}
+    <a class="ca-page-btn" href="?page={{ essays.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if comp_filter %}&competition={{ comp_filter }}{% endif %}">
+      <i class="bi bi-chevron-left"></i>
+    </a>
+    {% endif %}
+    {% for num in essays.paginator.page_range %}
+      {% if essays.number == num %}
+        <span class="ca-page-btn active">{{ num }}</span>
+      {% elif num > essays.number|add:"-3" and num < essays.number|add:"3" %}
+        <a class="ca-page-btn" href="?page={{ num }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if comp_filter %}&competition={{ comp_filter }}{% endif %}">{{ num }}</a>
+      {% endif %}
+    {% endfor %}
+    {% if essays.has_next %}
+    <a class="ca-page-btn" href="?page={{ essays.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if comp_filter %}&competition={{ comp_filter }}{% endif %}">
+      <i class="bi bi-chevron-right"></i>
+    </a>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Essay Detail Modal -->
+<div class="modal fade ca-modal" id="essayModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h5 class="modal-title" id="modalEssayTitle">Essay Detail</h5>
+          <small id="modalEssayMeta" style="color:var(--ink-light);"></small>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalEssayBody">
+        <div class="d-flex justify-content-center py-5">
+          <div class="spinner-border" style="color:var(--navy);" role="status"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn-outline" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+"use strict";
+
+// Lock / Unlock via AJAX
+document.querySelectorAll('.lock-btn').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const essayId = this.dataset.essayId;
+    const action  = this.dataset.action;
+    const url     = this.dataset.url;
+    try {
+      const data = await ajaxPost(url, { essay_id: essayId, action });
+      if (data.ok) {
+        const badge = document.getElementById('status-badge-' + essayId);
+        const lockBtn = document.getElementById('lock-btn-' + essayId);
+        const map = {
+          locked:      { cls: 'badge-locked',    icon: 'bi-lock-fill',         label: 'Locked' },
+          completed:   { cls: 'badge-completed', icon: 'bi-check-circle-fill', label: 'Completed' },
+          in_progress: { cls: 'badge-progress',  icon: 'bi-pencil-fill',       label: 'In Progress' },
+        };
+        const s = map[data.new_status];
+        badge.className = 'badge ' + s.cls;
+        badge.innerHTML = '<i class="bi ' + s.icon + '"></i> ' + s.label;
+
+        if (data.new_status === 'locked') {
+          lockBtn.dataset.action = 'unlock';
+          lockBtn.className = 'btn-icon btn-unlock lock-btn';
+          lockBtn.title = 'Unlock Essay';
+          lockBtn.innerHTML = '<i class="bi bi-unlock-fill"></i>';
+        } else {
+          lockBtn.dataset.action = 'lock';
+          lockBtn.className = 'btn-icon btn-lock lock-btn';
+          lockBtn.title = 'Lock Essay';
+          lockBtn.innerHTML = '<i class="bi bi-lock-fill"></i>';
+        }
+        toast('Essay #' + essayId + ' → <strong>' + data.new_status + '</strong>', 'success');
+      } else {
+        toast(data.error || 'Action failed.', 'error');
+      }
+    } catch (e) {
+      toast('Network error. Try again.', 'error');
+    }
+  });
+});
+
+// Essay detail modal via AJAX
+const essayModal = new bootstrap.Modal(document.getElementById('essayModal'));
+
+document.querySelectorAll('.view-essay-btn').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const url = this.dataset.url;
+    document.getElementById('modalEssayTitle').textContent = 'Essay Detail';
+    document.getElementById('modalEssayMeta').textContent = '';
+    document.getElementById('modalEssayBody').innerHTML = '<div class="d-flex justify-content-center py-5"><div class="spinner-border" style="color:var(--navy);" role="status"></div></div>';
+    essayModal.show();
+
+    try {
+      const data = await ajaxGet(url);
+      document.getElementById('modalEssayTitle').textContent = 'Essay #' + data.id;
+      document.getElementById('modalEssayMeta').textContent = data.username + ' · ' + data.competition;
+
+      const statusMap = {
+        in_progress: { cls: 'badge-progress',  label: 'In Progress' },
+        completed:   { cls: 'badge-completed', label: 'Completed' },
+        locked:      { cls: 'badge-locked',    label: 'Locked' },
+      };
+      const st = statusMap[data.status] || { cls: '', label: data.status };
+
+      const statsHtml = `
+        <div class="row g-2 mb-4">
+          ${[['Words', data.word_count || '—'],
+             ['Grammar Score', data.grammar_score ?? '—'],
+             ['Spelling Errors', data.spelling_errors ?? '0'],
+             ['Final Score', data.final_score ? Math.round(data.final_score) : '—']
+            ].map(([label, val]) => `
+            <div class="col-6 col-md-3">
+              <div class="modal-stat-card">
+                <div class="modal-stat-value">${val}</div>
+                <div class="modal-stat-label">${label}</div>
+              </div>
+            </div>`).join('')}
+        </div>`;
+
+      const metaHtml = `
+        <div class="d-flex flex-wrap gap-3 mb-4 modal-meta-row">
+          <span><i class="bi bi-calendar3"></i> Started: ${data.started_at || '—'}</span>
+          <span><i class="bi bi-calendar-check"></i> Completed: ${data.completed_at || 'In progress'}</span>
+          <span class="badge ${st.cls}">${st.label}</span>
+        </div>`;
+
+      const paraHtml = data.paragraphs.length
+        ? data.paragraphs.map(p => `
+            <div class="para-block">
+              <div class="para-label">Paragraph ${p.order}</div>
+              <div class="para-content">${escHtml(p.content)}</div>
+            </div>`).join('')
+        : '<p style="color:var(--ink-light);font-style:italic;">No paragraphs written yet.</p>';
+
+      document.getElementById('modalEssayBody').innerHTML =
+        statsHtml + metaHtml +
+        '<h6 class="para-heading">Essay Content</h6>' +
+        paraHtml;
+
+    } catch (e) {
+      document.getElementById('modalEssayBody').innerHTML =
+        '<div class="empty-cell py-4"><i class="bi bi-exclamation-circle" style="font-size:2rem;display:block;margin-bottom:8px;"></i>Failed to load essay.</div>';
+    }
+  });
+});
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function ajaxGet(url) {
+  return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); });
+}
+</script>
+{% endblock %}

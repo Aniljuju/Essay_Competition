@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}Admin{% endblock %} · Inkwell Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+  {% load static %}
+  <link rel="stylesheet" href="{% static 'custom_admin/css/admin.css' %}"/>
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<aside id="sidebar">
+  <div class="sidebar-brand">
+    <span class="brand-icon"><i class="bi bi-pen-fill"></i></span>
+    <div>
+      <div class="brand-name">Lekhani</div>
+      <div class="brand-sub">Admin Panel</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <a href="{% url 'custom_admin:dashboard' %}" class="nav-item {% block active_dashboard %}{% endblock %}">
+      <i class="bi bi-grid-fill"></i><span>Dashboard</span>
+    </a>
+
+    <div class="nav-section-label">Manage</div>
+    <a href="{% url 'custom_admin:users' %}" class="nav-item {% block active_users %}{% endblock %}">
+      <i class="bi bi-people-fill"></i><span>Users</span>
+    </a>
+    <a href="{% url 'custom_admin:essays' %}" class="nav-item {% block active_essays %}{% endblock %}">
+      <i class="bi bi-file-earmark-text-fill"></i><span>Essays</span>
+    </a>
+    <a href="{% url 'custom_admin:create_competition' %}" class="nav-item {% block active_competitions %}{% endblock %}">
+      <i class="bi bi-trophy-fill"></i><span>New Competition</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="d-flex align-items-center gap-2 min-w-0">
+      <div class="user-avatar">{{ request.user.username|first|upper }}</div>
+      <div class="min-w-0">
+        <div class="user-name">{{ request.user.username }}</div>
+        <div class="user-role">Administrator</div>
+      </div>
+    </div>
+    <button class="theme-btn" id="themeToggle" title="Toggle dark mode">
+      <i class="bi bi-moon-fill" id="themeIcon"></i>
+    </button>
+  </div>
+</aside>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<div id="main-wrap">
+
+  <!-- Topbar -->
+  <header id="topbar">
+    <div class="d-flex align-items-center gap-3">
+      <button id="sidebarToggle" class="sidebar-toggle-btn">
+        <i class="bi bi-list"></i>
+      </button>
+      <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+    </div>
+    <div class="d-flex align-items-center gap-3">
+      <span class="topbar-time" id="liveClock"></span>
+      <a href="{% url 'logout' %}" class="topbar-logout" title="Logout">
+        <i class="bi bi-box-arrow-right"></i>
+      </a>
+    </div>
+  </header>
+
+  <!-- Django messages -->
+  {% if messages %}
+  <div class="px-4 pt-3">
+    {% for message in messages %}
+    <div class="ca-alert ca-alert-{{ message.tags }}">
+      <i class="bi bi-{% if message.tags == 'success' %}check-circle-fill{% elif message.tags == 'error' %}x-circle-fill{% else %}info-circle-fill{% endif %}"></i>
+      <span>{{ message }}</span>
+      <button class="ca-alert-close" onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <!-- Content -->
+  <main id="content">
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+
+<!-- Toast rack -->
+<div id="toast-rack"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% load static %}
+<script src="{% static 'custom_admin/js/admin.js' %}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
