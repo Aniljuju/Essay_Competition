@@ -1,132 +1,205 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Essay Competition{% endblock %}
+{% block title %}Home — Lekhani Essay Competition{% endblock %}
 
 {% block content %}
 
 <!-- HERO SECTION -->
 <section class="hero-section" id="home">
-    <div class="container">
-        <div class="row align-items-center min-vh-75">
+    <div class="hero-noise"></div>
+    <div class="hero-orb hero-orb-1"></div>
+    <div class="hero-orb hero-orb-2"></div>
+    <div class="container position-relative">
+        <div class="row align-items-center min-vh-80">
             <div class="col-lg-8 mx-auto text-center">
-                <h1 class="display-3 fw-bold mb-4">
-                    Welcome to Lekhani
+                <span class="hero-eyebrow">
+                    <span class="hero-dot"></span>
+                    Essay Competition Platform
+                </span>
+                <h1 class="hero-title">
+                    Write with <span class="hero-highlight">intention.</span><br>
+                    Compete with integrity.
                 </h1>
-                <p class="lead mb-5">
-                    A controlled essay writing competition platform where participants write
-                    paragraph by paragraph. Once submitted, content is locked to ensure fairness.
+                <p class="hero-lead">
+                    Lekhani is a controlled writing competition where your essay unfolds
+                    paragraph by paragraph — no revisions, no shortcuts. Pure craft.
                 </p>
 
                 {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg px-5">
+                <a href="{% url 'dashboard' %}" class="btn btn-hero">
                     Go to Dashboard
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                 </a>
                 {% else %}
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg px-5">
+                <a href="{% url 'login' %}" class="btn btn-hero">
                     Login to Participate
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7" />
+                    </svg>
                 </a>
                 {% endif %}
+
+                <div class="hero-trust">
+                    <span>Verified accounts only</span>
+                    <span class="trust-sep">·</span>
+                    <span>Paragraph-locked essays</span>
+                    <span class="trust-sep">·</span>
+                    <span>Transparent rankings</span>
+                </div>
             </div>
         </div>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator">
+        <div class="scroll-line"></div>
     </div>
 </section>
 
 <!-- HOW IT WORKS -->
-<section class="container my-5" id="how-it-works">
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <h2 class="text-center mb-5">How It Works</h2>
+<section class="hiw-section" id="how-it-works">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
 
-            <div class="row g-4">
+                <div class="section-label">How it works</div>
+                <h2 class="section-title">Three steps to the podium</h2>
+                <p class="section-sub">Simple rules, serious competition.</p>
 
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">1</div>
-                        <h4>Account Verification</h4>
-                        <p>
-                            Admin creates and verifies participant accounts.
-                            Only verified users can join competitions.
-                        </p>
+                <div class="row g-4 mt-2">
+
+                    <div class="col-md-4">
+                        <div class="hiw-card">
+                            <div class="hiw-number">01</div>
+                            <div class="hiw-icon-wrap">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                    <circle cx="12" cy="7" r="4" />
+                                </svg>
+                            </div>
+                            <h4>Account Verification</h4>
+                            <p>Admin creates and verifies participant accounts. Only verified users can join
+                                competitions — no bots, no cheating.</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">2</div>
-                        <h4>Write Paragraphs</h4>
-                        <p>
-                            Essays are written one paragraph at a time.
-                            Once submitted, paragraphs cannot be edited.
-                        </p>
+                    <div class="col-md-4">
+                        <div class="hiw-card hiw-card-featured">
+                            <div class="hiw-number">02</div>
+                            <div class="hiw-icon-wrap">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 20h9" />
+                                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                                </svg>
+                            </div>
+                            <h4>Write Paragraphs</h4>
+                            <p>Essays are written one paragraph at a time. Once submitted, paragraphs are permanently
+                                locked — your words stand as written.</p>
+                            <div class="hiw-badge">Core Rule</div>
+                        </div>
                     </div>
-                </div>
 
-                <div class="col-md-4">
-                    <div class="feature-card">
-                        <div class="feature-icon">3</div>
-                        <h4>Compete & Win</h4>
-                        <p>
-                            Finish before the deadline. Rankings are based on
-                            completion time and word count.
-                        </p>
+                    <div class="col-md-4">
+                        <div class="hiw-card">
+                            <div class="hiw-number">03</div>
+                            <div class="hiw-icon-wrap">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                                    <polygon
+                                        points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                </svg>
+                            </div>
+                            <h4>Compete &amp; Win</h4>
+                            <p>Finish before the deadline. Rankings are based on completion time and word count — speed
+                                and quality both matter.</p>
+                        </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </div>
 </section>
 
 <!-- CONTACT SECTION -->
-<section class="cta-section" id="contact">
+<section class="contact-section" id="contact">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-8 mx-auto text-center">
+        <div class="row align-items-center g-5">
 
-                <h2 class="mb-4">Contact Us</h2>
-                <p class="lead mb-4">
-                    Have questions, feedback, or suggestions?
-                    Reach out to us anytime.
+            <!-- Left: copy -->
+            <div class="col-lg-5">
+                <div class="section-label section-label-light">Get in touch</div>
+                <h2 class="contact-title">Questions?<br>We're here.</h2>
+                <p class="contact-lead">
+                    Have a question, found a bug, or want to suggest a feature?
+                    Send us a message and the admin team will get back to you.
                 </p>
-
-                <div class="card shadow-custom border-gradient text-start">
-                    <div class="card-body">
-
-                        <form method="post">
-                            {% csrf_token %}
-
-                            <div class="mb-3">
-                                <label class="form-label">Your Name</label>
-                                <input type="text" class="form-control" placeholder="Enter your name" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Email Address</label>
-                                <input type="email" class="form-control" placeholder="Enter your email" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Message</label>
-                                <textarea class="form-control" rows="4" placeholder="Write your message here..."
-                                    required></textarea>
-                            </div>
-
-                            <div class="text-center">
-                                <button class="btn btn-primary btn-lg">
-                                    Send Message
-                                </button>
-                            </div>
-
-                        </form>
-
-                        <p class="text-muted text-center mt-3 mb-0">
-                            Messages will be reviewed by the admin.
-                        </p>
-
+                <div class="contact-perks">
+                    <div class="contact-perk">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        Reviewed by admin
+                    </div>
+                    <div class="contact-perk">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        All feedback welcome
+                    </div>
+                    <div class="contact-perk">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                        No account required
                     </div>
                 </div>
-
             </div>
+
+            <!-- Right: form -->
+            <div class="col-lg-6 offset-lg-1">
+                <div class="contact-card">
+                    <form method="post" class="contact-form">
+                        {% csrf_token %}
+
+                        <div class="cf-group">
+                            <label class="cf-label">Your Name</label>
+                            <input type="text" class="cf-input" placeholder="e.g. Aarav Sharma" required>
+                        </div>
+
+                        <div class="cf-group">
+                            <label class="cf-label">Email Address</label>
+                            <input type="email" class="cf-input" placeholder="you@example.com" required>
+                        </div>
+
+                        <div class="cf-group">
+                            <label class="cf-label">Message</label>
+                            <textarea class="cf-input cf-textarea" rows="4" placeholder="What's on your mind?"
+                                required></textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-contact-submit">
+                            Send Message
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="22" y1="2" x2="11" y2="13" />
+                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                            </svg>
+                        </button>
+
+                    </form>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
