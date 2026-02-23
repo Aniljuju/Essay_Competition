@@ -164,9 +164,10 @@
 
 {% block extra_js %}
 <script>
-const USER_CHART_DATA  = {{ user_chart_data|safe }};
-const ESSAY_CHART_DATA = {{ essay_chart_data|safe }};
-const COMP_CHART_DATA  = {{ comp_chart_data|safe }};
+  const USER_CHART_DATA = JSON.parse('{{ user_chart_data|escapejs }}');
+  const ESSAY_CHART_DATA = JSON.parse('{{ essay_chart_data|escapejs }}');
+  const COMP_CHART_DATA = JSON.parse('{{ comp_chart_data|escapejs }}');
 </script>
+
 <script src="{% static 'custom_admin/js/dashboard.js' %}"></script>
 {% endblock %}
